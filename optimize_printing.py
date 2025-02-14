@@ -40,22 +40,16 @@ def optimize_printing(print_jobs: List[Dict], constraints: Dict) -> Dict:
         batch_volume = 0
         batch_max_time = 0
         
-        # Групуємо завдання для одночасного друку
         for job in jobs[:]:
             if len(batch) < printer.max_items and batch_volume + job.volume <= printer.max_volume:
                 batch.append(job)
                 batch_volume += job.volume
                 batch_max_time = max(batch_max_time, job.print_time)
                 jobs.remove(job)
-
+        
         if batch:
-            print_order.append([job.id for job in batch])
+            print_order.extend([job.id for job in batch])
             total_time += batch_max_time
-        else:
-            # Якщо не змогли згрупувати, друкуємо завдання окремо
-            job = jobs.pop(0)
-            print_order.append(job.id)
-            total_time += job.print_time
 
     return {
         "print_order": print_order,
