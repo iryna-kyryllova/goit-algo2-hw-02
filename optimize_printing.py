@@ -25,32 +25,34 @@ def optimize_printing(print_jobs: List[Dict], constraints: Dict) -> Dict:
         Dict з порядком друку та загальним часом
     """
 
+    # Перетворимо вхідні дані у об'єкти PrintJob
+    jobs = [PrintJob(**job) for job in print_jobs]
+    
+    # Сортуємо завдання за пріоритетом і часом друку
+    jobs.sort(key=lambda x: (x.priority, x.print_time))
+    
     print_order = []
     total_time = 0
-
-    # Перетворимо вхідні дані у зручний формат
-    jobs = [PrintJob(**job) for job in print_jobs]
-    printer = PrinterConstraints(**constraints)
-    
-    # Сортуємо завдання за пріоритетом та часом друку
-    jobs.sort(key=lambda job: (job.priority, job.print_time))
     
     while jobs:
-        batch = []
-        batch_volume = 0
-        batch_max_time = 0
+        batch = []  # Поточна група друку
+        batch_volume = 0  # Сумарний об'єм групи
+        batch_time = 0  # Максимальний час друку в групі
+        batch_count = 0  # Кількість моделей у групі
         
         for job in jobs[:]:
-            if len(batch) < printer.max_items and batch_volume + job.volume <= printer.max_volume:
+            if (batch_volume + job.volume <= constraints["max_volume"] and
+                batch_count + 1 <= constraints["max_items"]):
                 batch.append(job)
                 batch_volume += job.volume
-                batch_max_time = max(batch_max_time, job.print_time)
+                batch_time = max(batch_time, job.print_time)
+                batch_count += 1
                 jobs.remove(job)
         
-        if batch:
-            print_order.extend([job.id for job in batch])
-            total_time += batch_max_time
-
+        # Додаємо ID моделей до списку друку в порядку сортування
+        print_order.extend([job.id for job in batch])
+        total_time += batch_time
+    
     return {
         "print_order": print_order,
         "total_time": total_time
