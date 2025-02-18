@@ -24,14 +24,14 @@ def rod_cutting_memo(length: int, prices: List[int]) -> Dict:
         max_profit = 0
         best_cut = []
         
-        for cut_size in range(1, rod_length + 1):
-            if cut_size <= len(prices):
-                current_profit, current_cuts = get_max_profit(rod_length - cut_size)
-                current_profit += prices[cut_size - 1]
+        for i in range(1, rod_length + 1):
+            if i <= len(prices):
+                current_profit, current_cuts = get_max_profit(rod_length - i)
+                current_profit += prices[i - 1]
                 
                 if current_profit > max_profit:
                     max_profit = current_profit
-                    best_cut = [cut_size] + current_cuts
+                    best_cut = [i] + current_cuts
         
         memo[rod_length] = max_profit
         cuts_memo[rod_length] = best_cut
@@ -57,28 +57,18 @@ def rod_cutting_table(length: int, prices: List[int]) -> Dict:
         Dict з максимальним прибутком та списком розрізів
     """
     
-    max_profit_table = [0] * (length + 1)
+    dp = [0] * (length + 1)
     cuts_table = [[] for _ in range(length + 1)]
     
-    for rod_length in range(1, length + 1):
-        max_profit = 0
-        best_cut = []
-        
-        for cut_size in range(1, rod_length + 1):
-            if cut_size <= len(prices):
-                current_profit = prices[cut_size - 1] + max_profit_table[rod_length - cut_size]
-                
-                if current_profit > max_profit:
-                    max_profit = current_profit
-                    best_cut = [cut_size] + cuts_table[rod_length - cut_size]
-                elif current_profit == max_profit and sorted([cut_size] + cuts_table[rod_length - cut_size]) < sorted(best_cut):
-                    best_cut = [cut_size] + cuts_table[rod_length - cut_size]
-        
-        max_profit_table[rod_length] = max_profit
-        cuts_table[rod_length] = best_cut
+    for i in range(1, length + 1):
+        for j in range(1, i + 1):
+            if j <= len(prices):
+                if dp[i] < prices[j - 1] + dp[i - j]:
+                    dp[i] = prices[j - 1] + dp[i - j]
+                    cuts_table[i] = [j] + cuts_table[i - j]
     
     return {
-        "max_profit": max_profit_table[length],
+        "max_profit": dp[length],
         "cuts": cuts_table[length],
         "number_of_cuts": len(cuts_table[length]) - 1 if cuts_table[length] else 0
     }

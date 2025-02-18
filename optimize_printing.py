@@ -36,9 +36,9 @@ def optimize_printing(print_jobs: List[Dict], constraints: Dict) -> Dict:
     
     while jobs:
         batch = []  # Поточна група друку
-        batch_volume = 0  # Сумарний об'єм групи
-        batch_time = 0  # Максимальний час друку в групі
-        batch_count = 0  # Кількість моделей у групі
+        batch_volume = 0
+        batch_time = 0
+        batch_count = 0
         
         for job in jobs[:]:
             if (batch_volume + job.volume <= constraints["max_volume"] and
